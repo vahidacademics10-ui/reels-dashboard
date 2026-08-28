@@ -1,10 +1,11 @@
-
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>استودیوی حرفه‌ای تولید ریلز</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 :root{
@@ -17,8 +18,7 @@
   --red:#ff3030;
   --white:#f5f9ff;
   --muted:#9aaabd;
-  --border:rgba(0,168,255,.65);
-  --shadow:0 18px 45px rgba(0,0,0,.65);
+  --green:#28e37f;
 }
 
 *{box-sizing:border-box}
@@ -42,7 +42,7 @@ body:before{
   position:fixed;
   inset:0;
   pointer-events:none;
-  opacity:.25;
+  opacity:.22;
   background:
     linear-gradient(rgba(0,168,255,.05) 1px,transparent 1px),
     linear-gradient(90deg,rgba(0,168,255,.05) 1px,transparent 1px);
@@ -61,26 +61,13 @@ main{
   overflow:hidden;
   padding:34px 22px;
   text-align:center;
-  border:1px solid var(--border);
+  border:1px solid rgba(0,168,255,.68);
   border-radius:26px;
-  background:
-    linear-gradient(145deg,rgba(16,27,40,.98),rgba(3,8,13,.98));
+  background:linear-gradient(145deg,rgba(16,27,40,.98),rgba(3,8,13,.98));
   box-shadow:
     0 0 0 1px rgba(0,168,255,.1) inset,
     0 0 34px rgba(0,135,255,.15),
-    var(--shadow);
-}
-
-.header:before{
-  content:"";
-  position:absolute;
-  width:240px;
-  height:240px;
-  top:-130px;
-  right:-80px;
-  border-radius:50%;
-  background:rgba(0,168,255,.10);
-  filter:blur(30px);
+    0 18px 45px rgba(0,0,0,.65);
 }
 
 .header:after{
@@ -100,9 +87,9 @@ main{
 }
 
 h1{
-  margin:8px 0 8px;
+  margin:8px 0;
   font-size:34px;
-  text-shadow:0 0 15px rgba(255,255,255,.14);
+  text-shadow:0 0 15px rgba(255,255,255,.13);
 }
 
 .subtitle{
@@ -110,52 +97,45 @@ h1{
   font-size:15px;
 }
 
-.status-row{
+.badges{
   display:flex;
   justify-content:center;
   flex-wrap:wrap;
   gap:10px;
-  margin-top:16px;
+  margin-top:15px;
 }
 
 .badge{
   padding:8px 13px;
   border-radius:999px;
-  font-size:12px;
   border:1px solid;
+  font-size:12px;
   box-shadow:0 0 12px rgba(0,0,0,.25);
 }
 
 .badge.blue{
-  color:#aee5ff;
-  background:rgba(0,168,255,.10);
+  color:#bcecff;
+  background:rgba(0,168,255,.08);
   border-color:#087fbe;
 }
 
-.badge.yellow{
-  color:#ffe77a;
-  background:rgba(255,210,26,.10);
-  border-color:#ae8a00;
-}
-
-.badge.red{
-  color:#ffaaaa;
-  background:rgba(255,48,48,.09);
-  border-color:#a93232;
+.badge.green{
+  color:#aaffcc;
+  background:rgba(40,227,127,.08);
+  border-color:#147445;
 }
 
 .card{
   position:relative;
   margin-top:20px;
   padding:23px;
-  border:1px solid var(--border);
+  border:1px solid rgba(0,168,255,.62);
   border-radius:21px;
-  background:
-    linear-gradient(145deg,rgba(15,25,36,.97),rgba(4,9,15,.98));
+  background:linear-gradient(145deg,rgba(15,25,36,.97),rgba(4,9,15,.98));
   box-shadow:
     0 0 0 1px rgba(0,168,255,.06) inset,
     0 0 24px rgba(0,136,255,.09),
-    var(--shadow);
+    0 18px 45px rgba(0,0,0,.58);
 }
 
 .card:before{
@@ -186,7 +166,7 @@ label{
   font-weight:bold;
 }
 
-input,textarea{
+input,select,textarea{
   width:100%;
   margin-top:8px;
   padding:13px 14px;
@@ -196,15 +176,13 @@ input,textarea{
   border-radius:12px;
   outline:none;
   font:inherit;
-  box-shadow:
-    inset 0 4px 12px rgba(0,0,0,.6),
-    0 0 0 rgba(0,0,0,0);
+  box-shadow:inset 0 4px 12px rgba(0,0,0,.6);
 }
 
-input:focus,textarea:focus{
+input:focus,select:focus,textarea:focus{
   border-color:var(--blue);
   box-shadow:
-    0 0 0 2px rgba(0,168,255,.10),
+    0 0 0 2px rgba(0,168,255,.1),
     0 0 17px rgba(0,168,255,.18),
     inset 0 4px 12px rgba(0,0,0,.6);
 }
@@ -224,51 +202,26 @@ button{
   font:inherit;
   font-weight:bold;
   cursor:pointer;
-  transition:transform .15s ease,box-shadow .15s ease;
+  transition:transform .15s ease,box-shadow .15s ease,opacity .15s ease;
   box-shadow:
     0 7px 0 rgba(0,0,0,.45),
     0 12px 22px rgba(0,0,0,.35),
     inset 0 1px 0 rgba(255,255,255,.18);
 }
 
-button:hover{
-  transform:translateY(-2px);
-}
+button:hover{transform:translateY(-2px)}
 
 button:active{
   transform:translateY(5px);
   box-shadow:
     0 2px 0 rgba(0,0,0,.45),
-    0 5px 10px rgba(0,0,0,.35),
-    inset 0 2px 5px rgba(0,0,0,.4);
+    0 5px 10px rgba(0,0,0,.35);
 }
 
-.action-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-  gap:16px;
-}
-
-.action{
-  min-height:120px;
-  text-align:center;
-  background:linear-gradient(145deg,#162635,#07101a);
-  border-color:#1778ad;
-}
-
-.action:hover{
-  border-color:var(--blue);
-  box-shadow:
-    0 9px 0 rgba(0,0,0,.45),
-    0 16px 28px rgba(0,0,0,.42),
-    0 0 24px rgba(0,168,255,.23),
-    inset 0 1px 0 rgba(255,255,255,.18);
-}
-
-.action .icon{
-  display:block;
-  font-size:31px;
-  margin-bottom:7px;
+button:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  transform:none;
 }
 
 .blue{
@@ -287,6 +240,11 @@ button:active{
   border-color:#ff8585;
 }
 
+.green{
+  background:linear-gradient(145deg,#35ef92,#08753d);
+  border-color:#66ffac;
+}
+
 .white{
   color:#101419;
   background:linear-gradient(145deg,#ffffff,#bdc8d4);
@@ -299,9 +257,69 @@ button:active{
   gap:12px;
 }
 
+.action-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:16px;
+}
+
+.action{
+  min-height:118px;
+  text-align:center;
+  background:linear-gradient(145deg,#162635,#07101a);
+  border-color:#1778ad;
+}
+
+.action:hover{
+  border-color:var(--blue);
+  box-shadow:
+    0 9px 0 rgba(0,0,0,.45),
+    0 16px 28px rgba(0,0,0,.42),
+    0 0 24px rgba(0,168,255,.23),
+    inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.icon{
+  display:block;
+  font-size:31px;
+  margin-bottom:7px;
+}
+
+.clip{
+  padding:16px;
+  margin:12px 0;
+  border:1px solid #245a79;
+  border-radius:14px;
+  background:linear-gradient(145deg,#0a151f,#050a0f);
+}
+
+.clip-title{
+  margin-bottom:12px;
+  color:#dff4ff;
+}
+
+.status{
+  margin-top:14px;
+  padding:14px;
+  border:1px solid #174966;
+  border-radius:12px;
+  background:#050b11;
+  color:#dff4ff;
+}
+
+.status.success{
+  color:#9affc3;
+  border-color:#147445;
+}
+
+.status.error{
+  color:#ffaaaa;
+  border-color:#8d2929;
+}
+
 .progress{
   height:14px;
-  margin-top:20px;
+  margin-top:18px;
   overflow:hidden;
   border:1px solid #14557b;
   border-radius:999px;
@@ -317,20 +335,15 @@ button:active{
   transition:width .35s ease;
 }
 
-.status{
-  margin-top:12px;
-  padding:14px;
-  color:#dff4ff;
-  border:1px solid #174966;
-  border-radius:12px;
-  background:#050b11;
-}
-
 .small{
   margin-top:7px;
   color:#99aabc;
   font-size:12px;
   font-weight:normal;
+}
+
+.hidden{
+  display:none !important;
 }
 
 .footer{
@@ -344,228 +357,1329 @@ button:active{
   h1{font-size:27px}
   .logo{font-size:44px}
   .card{padding:17px}
-  main{width:95%}
 }
 </style>
 </head>
 
 <body>
+
 <main>
 
 <section class="header">
   <div class="logo">🎬</div>
   <h1>استودیوی حرفه‌ای تولید ریلز</h1>
-  <div class="subtitle">مرکز مدیریت و آماده‌سازی ویدئوهای عمودی</div>
+  <div class="subtitle">
+    مرکز مدیریت، آماده‌سازی و ساخت ویدئوهای عمودی
+  </div>
 
-  <div class="status-row">
-    <span class="badge blue">● سیستم آماده</span>
-    <span class="badge yellow">⚡ پردازش سریع</span>
-    <span class="badge red">● خروجی HD</span>
+  <div class="badges">
+    <span class="badge blue">● Supabase متصل</span>
+    <span class="badge green" id="loginBadge">● آماده ورود</span>
   </div>
 </section>
 
-<section class="card">
-  <h2>🎛️ عملیات اصلی</h2>
+<!-- LOGIN -->
+<section class="card" id="loginSection">
 
-  <div class="action-grid">
-
-    <button class="action blue" onclick="go('video')">
-      <span class="icon">⬆️</span>
-      آپلود کلیپ
-      <div class="small">انتخاب فایل ویدئویی</div>
-    </button>
-
-    <button class="action yellow" onclick="go('music')">
-      <span class="icon">🎵</span>
-      افزودن موسیقی
-      <div class="small">MP3 / WAV</div>
-    </button>
-
-    <button class="action white" onclick="go('cover')">
-      <span class="icon">🖼️</span>
-      انتخاب کاور
-      <div class="small">تصویر ریلز</div>
-    </button>
-
-    <button class="action red" onclick="go('caption')">
-      <span class="icon">✍️</span>
-      کپشن و هشتگ
-      <div class="small">متن انتشار</div>
-    </button>
-
-  </div>
-</section>
-
-<section class="card">
-  <h2>📁 فایل‌های پروژه</h2>
-
-  <div class="grid">
-
-    <label id="video">
-      کلیپ اصلی
-      <input id="videoFile" type="file" accept="video/*">
-    </label>
-
-    <label id="music">
-      موسیقی
-      <input id="musicFile" type="file" accept="audio/*">
-    </label>
-
-    <label id="cover">
-      کاور
-      <input id="coverFile" type="file" accept="image/*">
-    </label>
-
-  </div>
-</section>
-
-<section class="card">
-  <h2>⚙️ تنظیمات ریلز</h2>
+  <h2>🔐 ورود به استودیو</h2>
 
   <div class="grid">
 
     <label>
-      مدت هدف
-      <input id="duration" type="number" value="12" min="10" max="25">
+      ایمیل
+      <input
+        id="email"
+        type="email"
+        placeholder="ایمیل خود را وارد کنید"
+      >
     </label>
 
     <label>
-      میزان موسیقی
-      <input id="musicVol" type="range" min="0" max="100" value="70">
+      کد ۶ رقمی
+      <input
+        id="otp"
+        type="text"
+        inputmode="numeric"
+        maxlength="6"
+        placeholder="کد ارسال‌شده به ایمیل"
+      >
     </label>
+
+  </div>
+
+  <div class="actions" style="margin-top:16px">
+
+    <button class="blue" onclick="sendLoginCode()">
+      📩 ارسال کد ورود
+    </button>
+
+    <button class="green" onclick="verifyLoginCode()">
+      ✅ ورود
+    </button>
+
+  </div>
+
+  <div id="loginStatus" class="status">
+    برای استفاده از امکانات واقعی، وارد حساب شوید.
+  </div>
+
+</section>
+
+
+<!-- APP -->
+<section id="appSection" class="hidden">
+
+  <section class="card">
+
+    <h2>🎛️ عملیات اصلی</h2>
+
+    <div class="action-grid">
+
+      <button class="action blue" onclick="scrollToId('videoFiles')">
+        <span class="icon">🎞️</span>
+        افزودن کلیپ
+        <div class="small">ویدئوی اصلی ریلز</div>
+      </button>
+
+      <button class="action yellow" onclick="scrollToId('musicFiles')">
+        <span class="icon">🎵</span>
+        افزودن موسیقی
+        <div class="small">MP3 / WAV</div>
+      </button>
+
+      <button class="action white" onclick="scrollToId('coverFiles')">
+        <span class="icon">🖼️</span>
+        انتخاب کاور
+        <div class="small">تصویر ریلز</div>
+      </button>
+
+      <button class="action red" onclick="scrollToId('captionSection')">
+        <span class="icon">✍️</span>
+        کپشن و هشتگ
+        <div class="small">متن انتشار</div>
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- FILES -->
+  <section class="card">
+
+    <h2>📁 فایل‌های پروژه</h2>
+
+    <div class="grid">
+
+      <label id="coverFiles">
+        کاور
+        <input
+          id="coverFile"
+          type="file"
+          accept="image/*"
+        >
+      </label>
+
+      <label id="musicFiles">
+        موسیقی
+        <input
+          id="musicFile"
+          type="file"
+          accept="audio/*"
+        >
+      </label>
+
+    </div>
+
+  </section>
+
+
+  <!-- CLIPS -->
+  <section class="card" id="videoFiles">
+
+    <h2>🎞️ کلیپ‌های ریلز</h2>
+
+    <div id="clipsContainer"></div>
+
+    <div class="actions">
+
+      <button class="blue" onclick="addClip()">
+        + افزودن کلیپ
+      </button>
+
+      <button class="white" onclick="calculateDuration()">
+        🔄 محاسبه مدت
+      </button>
+
+    </div>
+
+    <div class="status">
+      مدت نهایی:
+      <strong id="durationText">0.0</strong>
+      ثانیه
+    </div>
+
+    <div class="small">
+      مدت مجاز ریلز: بین ۱۰ تا ۲۵ ثانیه
+    </div>
+
+  </section>
+
+
+  <!-- AUDIO -->
+  <section class="card">
+
+    <h2>🎚️ تنظیمات صدا</h2>
+
+    <div class="grid">
+
+      <label>
+        حالت صدا
+        <select id="audioMode">
+          <option value="music">
+            فقط موسیقی
+          </option>
+
+          <option value="mix">
+            موسیقی + صدای اصلی
+          </option>
+        </select>
+      </label>
+
+      <label>
+        صدای موسیقی
+        <input
+          id="musicVolume"
+          type="range"
+          min="0"
+          max="100"
+          value="70"
+        >
+      </label>
+
+      <label>
+        صدای اصلی
+        <input
+          id="originalVolume"
+          type="range"
+          min="0"
+          max="100"
+          value="30"
+        >
+      </label>
+
+    </div>
+
+  </section>
+
+
+  <!-- CAPTION -->
+  <section class="card" id="captionSection">
+
+    <h2>📝 کپشن و هشتگ</h2>
 
     <label>
-      صدای اصلی
-      <input id="origVol" type="range" min="0" max="100" value="30">
+      حالت کپشن
+
+      <select id="captionMode">
+
+        <option value="user">
+          متن را خودم می‌دهم
+        </option>
+
+        <option value="ai">
+          ایجنت تولید کند
+        </option>
+
+      </select>
+
     </label>
 
-  </div>
-</section>
+    <label style="margin-top:14px">
 
-<section class="card">
-  <h2 id="caption">📝 کپشن و هشتگ</h2>
+      کپشن یا موضوع
 
-  <label>
-    کپشن
-    <textarea id="captionText" rows="5"
-      placeholder="کپشن خود را اینجا وارد کنید..."></textarea>
-  </label>
+      <textarea
+        id="captionText"
+        rows="5"
+        placeholder="کپشن یا موضوع ریلز..."
+      ></textarea>
 
-  <div class="grid" style="margin-top:16px">
-    <input class="tag" placeholder="#هشتگ1">
-    <input class="tag" placeholder="#هشتگ2">
-    <input class="tag" placeholder="#هشتگ3">
-    <input class="tag" placeholder="#هشتگ4">
-  </div>
-</section>
+    </label>
 
-<section class="card">
-  <h2>🚀 تولید خروجی</h2>
+    <div class="grid" style="margin-top:14px">
 
-  <div class="actions">
-    <button class="yellow" onclick="buildReel()">🚀 ساخت ریلز</button>
-    <button class="blue" onclick="preview()">▶️ پیش‌نمایش</button>
-    <button class="red" onclick="clearProject()">🗑️ پاک‌سازی</button>
-  </div>
+      <input id="tag1" placeholder="#هشتگ1">
+      <input id="tag2" placeholder="#هشتگ2">
+      <input id="tag3" placeholder="#هشتگ3">
+      <input id="tag4" placeholder="#هشتگ4">
 
-  <div class="progress">
-    <div class="bar" id="bar"></div>
-  </div>
+    </div>
 
-  <div class="status" id="status">
-    آماده شروع پروژه
-  </div>
+  </section>
+
+
+  <!-- PROJECT -->
+  <section class="card">
+
+    <h2>🚀 پروژه</h2>
+
+    <div class="actions">
+
+      <button
+        class="yellow"
+        onclick="saveProject()"
+      >
+        💾 ذخیره و آپلود
+      </button>
+
+      <button
+        class="green"
+        id="renderButton"
+        onclick="createRenderJob()"
+        disabled
+      >
+        🎬 ساخت ریلز
+      </button>
+
+      <button
+        class="red"
+        onclick="resetProject()"
+      >
+        🗑️ پاک‌سازی
+      </button>
+
+      <button
+        class="white"
+        onclick="signOut()"
+      >
+        خروج
+      </button>
+
+    </div>
+
+    <div class="progress">
+      <div class="bar" id="progressBar"></div>
+    </div>
+
+    <div
+      class="status"
+      id="projectStatus"
+    >
+      هنوز پروژه‌ای ذخیره نشده است.
+    </div>
+
+  </section>
+
 </section>
 
 <div class="footer">
-  Reel Studio • Professional Dashboard
+  Reel Studio • GitHub Pages + Supabase
 </div>
 
 </main>
 
+
 <script>
-function go(id){
-  const el=document.getElementById(id);
+
+const SUPABASE_URL =
+  "https://gupsczsijquinulyaeml.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_qqn1vNfKtYbA_p_KsKUo4w_4s2FoDhn";
+
+const supabase =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+
+let clipCount = 0;
+let currentProjectId = null;
+
+
+function $(id){
+  return document.getElementById(id);
+}
+
+
+function scrollToId(id){
+
+  const el = $(id);
+
   if(el){
+
     el.scrollIntoView({
       behavior:"smooth",
       block:"center"
     });
+
   }
+
 }
 
-function buildReel(){
-  const duration=Number(
-    document.getElementById("duration").value
-  );
 
-  const bar=document.getElementById("bar");
-  const status=document.getElementById("status");
+function setLoginStatus(
+  message,
+  type=""
+){
 
-  if(duration<10 || duration>25){
-    status.textContent=
-      "⚠️ مدت ریلز باید بین ۱۰ تا ۲۵ ثانیه باشد.";
+  const el = $("loginStatus");
+
+  el.textContent = message;
+
+  el.className =
+    "status " +
+    (
+      type === "success"
+        ? "success"
+        : type === "error"
+          ? "error"
+          : ""
+    );
+
+}
+
+
+function setProjectStatus(
+  message,
+  type=""
+){
+
+  const el = $("projectStatus");
+
+  el.textContent = message;
+
+  el.className =
+    "status " +
+    (
+      type === "success"
+        ? "success"
+        : type === "error"
+          ? "error"
+          : ""
+    );
+
+}
+
+
+async function sendLoginCode(){
+
+  const email =
+    $("email").value.trim();
+
+  if(!email){
+
+    setLoginStatus(
+      "لطفاً ایمیل را وارد کنید.",
+      "error"
+    );
+
     return;
   }
 
-  let progress=0;
+  setLoginStatus(
+    "در حال ارسال کد ورود..."
+  );
 
-  const steps=[
-    "🔵 آماده‌سازی پروژه...",
-    "🟡 بررسی کلیپ...",
-    "🔵 تنظیم موسیقی...",
-    "🔴 پردازش ویدئو...",
-    "🟢 آماده‌سازی خروجی..."
-  ];
+  const { error } =
+    await supabase.auth.signInWithOtp({
+      email: email
+    });
 
-  bar.style.width="0%";
+  if(error){
 
-  const timer=setInterval(function(){
-
-    progress+=20;
-
-    bar.style.width=progress+"%";
-
-    const stepIndex=Math.min(
-      Math.floor(progress/20)-1,
-      steps.length-1
+    setLoginStatus(
+      "خطا: " + error.message,
+      "error"
     );
 
-    status.textContent=steps[stepIndex];
+    return;
+  }
 
-    if(progress>=100){
-      clearInterval(timer);
+  setLoginStatus(
+    "✅ کد ورود به ایمیل شما ارسال شد.",
+    "success"
+  );
 
-      setTimeout(function(){
-        status.textContent=
-          "✅ ریلز با موفقیت آماده شد.";
-      },300);
+}
+
+
+async function verifyLoginCode(){
+
+  const email =
+    $("email").value.trim();
+
+  const token =
+    $("otp").value.trim();
+
+  if(!email || !token){
+
+    setLoginStatus(
+      "ایمیل و کد ۶ رقمی را وارد کنید.",
+      "error"
+    );
+
+    return;
+  }
+
+  setLoginStatus(
+    "در حال بررسی کد..."
+  );
+
+  const { error } =
+    await supabase.auth.verifyOtp({
+
+      email: email,
+
+      token: token,
+
+      type: "email"
+
+    });
+
+  if(error){
+
+    setLoginStatus(
+      "کد صحیح نیست: " + error.message,
+      "error"
+    );
+
+    return;
+  }
+
+  await refreshAuth();
+
+}
+
+
+async function refreshAuth(){
+
+  const {
+    data:{ user }
+  } =
+    await supabase.auth.getUser();
+
+  const loggedIn =
+    !!user;
+
+  $("loginSection")
+    .classList
+    .toggle(
+      "hidden",
+      loggedIn
+    );
+
+  $("appSection")
+    .classList
+    .toggle(
+      "hidden",
+      !loggedIn
+    );
+
+  $("loginBadge").textContent =
+    loggedIn
+      ? "● وارد شده"
+      : "● آماده ورود";
+
+  if(loggedIn){
+
+    setProjectStatus(
+      "✅ ورود موفق بود. پروژه خود را آماده کنید.",
+      "success"
+    );
+
+  }
+
+}
+
+
+function addClip(){
+
+  if(clipCount >= 3){
+
+    setProjectStatus(
+      "حداکثر ۳ کلیپ قابل استفاده است.",
+      "error"
+    );
+
+    return;
+  }
+
+  clipCount++;
+
+  const box =
+    document.createElement("div");
+
+  box.className = "clip";
+
+  box.innerHTML = `
+
+    <div class="clip-title">
+      🎞️ کلیپ ${clipCount}
+    </div>
+
+    <label>
+      فایل ویدئو
+
+      <input
+        id="clipFile${clipCount}"
+        type="file"
+        accept="video/*"
+      >
+
+    </label>
+
+    <div
+      class="grid"
+      style="margin-top:12px"
+    >
+
+      <label>
+        شروع
+        <input
+          id="clipStart${clipCount}"
+          type="number"
+          min="0"
+          step="0.1"
+          value="0"
+        >
+      </label>
+
+      <label>
+        پایان
+        <input
+          id="clipEnd${clipCount}"
+          type="number"
+          min="0"
+          step="0.1"
+          value="10"
+        >
+      </label>
+
+    </div>
+  `;
+
+  $("clipsContainer")
+    .appendChild(box);
+
+
+  $("clipStart"+clipCount)
+    .addEventListener(
+      "input",
+      calculateDuration
+    );
+
+
+  $("clipEnd"+clipCount)
+    .addEventListener(
+      "input",
+      calculateDuration
+    );
+
+
+  calculateDuration();
+
+}
+
+
+function calculateDuration(){
+
+  let total = 0;
+
+  for(let i=1;i<=clipCount;i++){
+
+    const start =
+      Number(
+        $("clipStart"+i)?.value || 0
+      );
+
+    const end =
+      Number(
+        $("clipEnd"+i)?.value || 0
+      );
+
+    total +=
+      Math.max(
+        0,
+        end - start
+      );
+
+  }
+
+  $("durationText")
+    .textContent =
+      total.toFixed(1);
+
+  return total;
+
+}
+
+
+async function uploadToStorage(
+  file,
+  projectId,
+  folder,
+  index=""
+){
+
+  if(!file) return null;
+
+  const safeName =
+    file.name
+      .replace(
+        /[^a-zA-Z0-9._-]/g,
+        "_"
+      );
+
+  const path =
+    projectId +
+    "/" +
+    folder +
+    "/" +
+    Date.now() +
+    "-" +
+    index +
+    "-" +
+    safeName;
+
+  const {
+    error
+  } =
+    await supabase.storage
+      .from("reels")
+      .upload(
+        path,
+        file
+      );
+
+  if(error) throw error;
+
+  return {
+
+    path: path,
+
+    name: file.name,
+
+    type: file.type,
+
+    size: file.size
+
+  };
+
+}
+
+
+async function saveProject(){
+
+  try{
+
+    const {
+      data:{ user }
+    } =
+      await supabase.auth.getUser();
+
+    if(!user){
+
+      setProjectStatus(
+        "ابتدا وارد شوید.",
+        "error"
+      );
+
+      return;
     }
 
-  },500);
+
+    const duration =
+      calculateDuration();
+
+
+    if(
+      duration < 10 ||
+      duration > 25
+    ){
+
+      setProjectStatus(
+        "مدت ریلز باید بین ۱۰ تا ۲۵ ثانیه باشد.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    setProjectStatus(
+      "در حال ساخت پروژه..."
+    );
+
+    $("progressBar")
+      .style
+      .width = "10%";
+
+
+    const {
+      data: project,
+      error: projectError
+    } =
+      await supabase
+        .from("projects")
+        .insert({
+
+          user_id:user.id,
+
+          title:
+            "Reel " +
+            new Date()
+              .toLocaleString("fa-IR"),
+
+          status:"draft"
+
+        })
+        .select()
+        .single();
+
+
+    if(projectError)
+      throw projectError;
+
+
+    currentProjectId =
+      project.id;
+
+
+    $("progressBar")
+      .style
+      .width = "25%";
+
+
+    const cover =
+      $("coverFile")
+        .files[0];
+
+
+    const music =
+      $("musicFile")
+        .files[0];
+
+
+    if(cover){
+
+      const result =
+        await uploadToStorage(
+          cover,
+          project.id,
+          "cover"
+        );
+
+
+      const {
+        error
+      } =
+        await supabase
+          .from("project_files")
+          .insert({
+
+            project_id:project.id,
+
+            file_type:"cover",
+
+            storage_path:
+              result.path,
+
+            original_filename:
+              result.name,
+
+            mime_type:
+              result.type,
+
+            file_size:
+              result.size
+
+          });
+
+
+      if(error)
+        throw error;
+
+    }
+
+
+    $("progressBar")
+      .style
+      .width = "40%";
+
+
+    if(music){
+
+      const result =
+        await uploadToStorage(
+          music,
+          project.id,
+          "music"
+        );
+
+
+      const {
+        error
+      } =
+        await supabase
+          .from("project_files")
+          .insert({
+
+            project_id:project.id,
+
+            file_type:"music",
+
+            storage_path:
+              result.path,
+
+            original_filename:
+              result.name,
+
+            mime_type:
+              result.type,
+
+            file_size:
+              result.size
+
+          });
+
+
+      if(error)
+        throw error;
+
+    }
+
+
+    for(
+      let i=1;
+      i<=clipCount;
+      i++
+    ){
+
+      const file =
+        $("clipFile"+i)
+          .files[0];
+
+      if(!file) continue;
+
+
+      const result =
+        await uploadToStorage(
+          file,
+          project.id,
+          "source_video",
+          i
+        );
+
+
+      const {
+        data: projectFile,
+        error: fileError
+      } =
+        await supabase
+          .from("project_files")
+          .insert({
+
+            project_id:
+              project.id,
+
+            file_type:
+              "source_video",
+
+            storage_path:
+              result.path,
+
+            original_filename:
+              result.name,
+
+            mime_type:
+              result.type,
+
+            file_size:
+              result.size
+
+          })
+          .select()
+          .single();
+
+
+      if(fileError)
+        throw fileError;
+
+
+      const start =
+        Number(
+          $("clipStart"+i).value
+        );
+
+
+      const end =
+        Number(
+          $("clipEnd"+i).value
+        );
+
+
+      const {
+        error: clipError
+      } =
+        await supabase
+          .from("project_clips")
+          .insert({
+
+            project_id:
+              project.id,
+
+            file_id:
+              projectFile.id,
+
+            clip_order:
+              i,
+
+            start_seconds:
+              start,
+
+            end_seconds:
+              end
+
+          });
+
+
+      if(clipError)
+        throw clipError;
+
+    }
+
+
+    $("progressBar")
+      .style
+      .width = "65%";
+
+
+    const {
+      error: audioError
+    } =
+      await supabase
+        .from("audio_settings")
+        .upsert({
+
+          project_id:
+            project.id,
+
+          original_audio_enabled:
+            $("audioMode").value === "mix",
+
+          music_volume:
+            Number(
+              $("musicVolume").value
+            ),
+
+          original_volume:
+            Number(
+              $("originalVolume").value
+            )
+
+        });
+
+
+    if(audioError)
+      throw audioError;
+
+
+    const hashtags =
+      [
+
+        $("tag1").value.trim(),
+
+        $("tag2").value.trim(),
+
+        $("tag3").value.trim(),
+
+        $("tag4").value.trim()
+
+      ]
+      .filter(Boolean);
+
+
+    const {
+      error: captionError
+    } =
+      await supabase
+        .from("captions")
+        .upsert({
+
+          project_id:
+            project.id,
+
+          mode:
+            $("captionMode").value,
+
+          source_text:
+            $("captionText").value.trim(),
+
+          hashtags:
+            hashtags
+
+        });
+
+
+    if(captionError)
+      throw captionError;
+
+
+    const {
+      error: updateError
+    } =
+      await supabase
+        .from("projects")
+        .update({
+
+          status:"ready"
+
+        })
+        .eq(
+          "id",
+          project.id
+        );
+
+
+    if(updateError)
+      throw updateError;
+
+
+    $("progressBar")
+      .style
+      .width = "100%";
+
+
+    $("renderButton")
+      .disabled = false;
+
+
+    setProjectStatus(
+      "✅ پروژه، فایل‌ها، صدا و کپشن با موفقیت ذخیره شدند. اکنون «ساخت ریلز» را بزنید.",
+      "success"
+    );
+
+
+  }catch(error){
+
+    console.error(error);
+
+    setProjectStatus(
+      "خطا: " +
+      (error.message || error),
+      "error"
+    );
+
+  }
+
 }
 
-function preview(){
-  document.getElementById("status").textContent=
-    "▶️ پیش‌نمایش پروژه آماده شد.";
+
+async function createRenderJob(){
+
+  if(!currentProjectId){
+
+    setProjectStatus(
+      "ابتدا پروژه را ذخیره کنید.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  try{
+
+    const {
+      data:{ session }
+    } =
+      await supabase.auth.getSession();
+
+
+    if(!session){
+
+      throw new Error(
+        "جلسه ورود شما منقضی شده است."
+      );
+
+    }
+
+
+    const duration =
+      calculateDuration();
+
+
+    if(
+      duration < 10 ||
+      duration > 25
+    ){
+
+      throw new Error(
+        "مدت ریلز باید بین ۱۰ تا ۲۵ ثانیه باشد."
+      );
+
+    }
+
+
+    $("renderButton")
+      .disabled = true;
+
+
+    $("progressBar")
+      .style
+      .width = "25%";
+
+
+    setProjectStatus(
+      "🎬 در حال ارسال پروژه برای ساخت ریلز..."
+    );
+
+
+    const response =
+      await fetch(
+
+        SUPABASE_URL +
+        "/functions/v1/create-render-job-v2",
+
+        {
+
+          method:"POST",
+
+          headers:{
+
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              "Bearer " +
+              session.access_token,
+
+            "apikey":
+              SUPABASE_PUBLISHABLE_KEY
+
+          },
+
+          body:JSON.stringify({
+
+            project_id:
+              currentProjectId,
+
+            requested_duration:
+              duration
+
+          })
+
+        }
+
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if(!response.ok){
+
+      throw new Error(
+        result.error ||
+        "خطا در ایجاد درخواست ساخت"
+      );
+
+    }
+
+
+    $("progressBar")
+      .style
+      .width = "100%";
+
+
+    setProjectStatus(
+      "✅ درخواست ساخت ریلز ثبت شد. وضعیت پردازش از Backend دنبال می‌شود.",
+      "success"
+    );
+
+
+  }catch(error){
+
+    $("renderButton")
+      .disabled = false;
+
+
+    setProjectStatus(
+      "خطا: " +
+      error.message,
+      "error"
+    );
+
+  }
+
 }
 
-function clearProject(){
 
-  document.getElementById("videoFile").value="";
-  document.getElementById("musicFile").value="";
-  document.getElementById("coverFile").value="";
-  document.getElementById("captionText").value="";
+async function signOut(){
 
-  document.querySelectorAll(".tag").forEach(function(tag){
-    tag.value="";
-  });
+  await supabase.auth.signOut();
 
-  document.getElementById("bar").style.width="0%";
+  currentProjectId =
+    null;
 
-  document.getElementById("status").textContent=
-    "🗑️ اطلاعات پروژه پاک شد.";
+  $("renderButton")
+    .disabled = true;
+
+  await refreshAuth();
+
 }
+
+
+function resetProject(){
+
+  $("coverFile").value="";
+  $("musicFile").value="";
+
+  $("captionText").value="";
+
+  $("tag1").value="";
+  $("tag2").value="";
+  $("tag3").value="";
+  $("tag4").value="";
+
+  $("clipsContainer")
+    .innerHTML="";
+
+  clipCount=0;
+
+  currentProjectId =
+    null;
+
+  $("renderButton")
+    .disabled = true;
+
+  $("progressBar")
+    .style
+    .width = "0%";
+
+  addClip();
+
+  setProjectStatus(
+    "پروژه پاک شد."
+  );
+
+}
+
+
+supabase.auth.onAuthStateChange(
+  () => {
+    refreshAuth();
+  }
+);
+
+
+addClip();
+refreshAuth();
+
 </script>
 
 </body>
